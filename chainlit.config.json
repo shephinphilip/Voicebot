@@ -1,0 +1,17 @@
+{
+    "project_name": "Voicebot",
+    "project_description": "An AI voice assistant that can listen and respond",
+    "chainlit_server": {
+        "host": "0.0.0.0",
+        "port": 8000
+    },
+    "ui": {
+        "name": "Voicebot",
+        "description": "Your friendly AI voice assistant",
+        "hide_cot": false,
+        "message_placeholder": "Speak to me...",
+        "welcome_message": "Hello! I'm Voicebot, your friendly AI assistant. I'm here to chat and help you out. What would you like to know?",
+        "show_avatar": true,
+        "avatar_url": "https://api.dicebear.com/7.x/bottts/svg?seed=voicebot"
+    }
+} 

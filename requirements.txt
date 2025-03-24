@@ -1,0 +1,7 @@
+chainlit
+openai
+pyttsx3
+speechrecognition
+pyaudio
+python-dotenv
+pydub
