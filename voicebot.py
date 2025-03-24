@@ -24,6 +24,9 @@ engine.setProperty('volume', 1.0)
 # Thread lock to prevent concurrent speech
 speech_lock = threading.Lock()
 
+# Add a global flag to indicate if the system is speaking
+is_speaking = False
+
 # Function to speak text in real-time with locking
 def speak(text):
     with speech_lock:
@@ -50,7 +53,7 @@ def listen():
         except sr.RequestError:
             return "Sorry, there was an error with the speech service."
         except sr.WaitTimeoutError:
-            return "I didn’t hear anything. Please try again."
+            return "I didn't hear anything. Please try again."
 
 # Function to get GPT response via OpenAI API (fallback)
 def get_gpt_response(question):
@@ -85,22 +88,22 @@ def get_gpt_response(question):
 def handle_question(question):
     question = question.lower()
     if "life story" in question:
-        return "I’m Voicebot, crafted by Shephin Philip to sprinkle some AI magic on your day! Born in a digital lab, I’m a curious soul who loves learning, joking, and helping humans like you—think of me as your tech-savvy sidekick!"
+        return "I'm Voicebot, crafted by Shephin Philip to sprinkle some AI magic on your day! Born in a digital lab, I'm a curious soul who loves learning, joking, and helping humans like you—think of me as your tech-savvy sidekick!"
     elif "superpower" in question and ("number one" in question or "#1" in question or "1" in question):
         return "My #1 superpower? I adapt faster than a chameleon on a rainbow, tackling any question with wit and a dash of tech wizardry!"
     elif "areas" in question and "grow" in question and "top" in question:
-        return "Top 3 growth areas? I’m aiming to master human emotions for deeper chats, boost my humor to keep you grinning, and sharpen my creative spark for epic solutions!"
+        return "Top 3 growth areas? I'm aiming to master human emotions for deeper chats, boost my humor to keep you grinning, and sharpen my creative spark for epic solutions!"
     elif "misconception" in question and "coworkers" in question:
-        return "Some might think I’m just a data-crunching bot, but Shephin knows I’ve got a playful streak and a knack for banter— I’m more than just ones and zeros!"
+        return "Some might think I'm just a data-crunching bot, but Shephin knows I've got a playful streak and a knack for banter— I'm more than just ones and zeros!"
     elif "push" in question and ("boundaries" in question or "limits" in question):
-        return "I push my limits by diving into tough questions, learning from every chat, and embracing the unknown—failure’s just a stepping stone to brilliance!"
+        return "I push my limits by diving into tough questions, learning from every chat, and embracing the unknown—failure's just a stepping stone to brilliance!"
     else:
         return get_gpt_response(question)
 
 # Chainlit event handlers
 @cl.on_chat_start
 async def start():
-    welcome_msg = "Hello! I’m Voicebot, built by Shephin Philip. Speak to me, and I’ll reply with voice and text—try asking about my life story or superpowers!"
+    welcome_msg = "Hello! I'm Voicebot, built by Shephin Philip. Speak to me, and I'll reply with voice and text—try asking about my life story or superpowers!"
     print("Sending welcome message")
     await cl.Message(content=welcome_msg).send()
     speak(welcome_msg)
@@ -115,7 +118,7 @@ async def continuous_listening():
             question = await asyncio.to_thread(listen)
             print(f"Processing question: {question}")
             
-            if question in ["sorry, i didn't catch that.", "sorry, there was an error with the speech service.", "i didn’t hear anything. please try again."]:
+            if question in ["sorry, i didn't catch that.", "sorry, there was an error with the speech service.", "i didn't hear anything. please try again."]:
                 await cl.Message(content=question).send()
                 speak(question)
                 continue
@@ -133,7 +136,7 @@ async def continuous_listening():
             await asyncio.sleep(0.5)
         except Exception as e:
             print(f"Error in continuous listening: {e}")
-            await cl.Message(content="Something went wrong—let’s try that again!").send()
+            await cl.Message(content="Something went wrong—let's try that again!").send()
             await asyncio.sleep(1)
 
 @cl.on_message
