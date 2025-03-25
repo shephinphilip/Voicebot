@@ -1,34 +1,78 @@
 # Voicebot
 
-Voicebot is an interactive AI voice assistant built using Chainlit. It converts your spoken input into text, processes your queries using OpenAI's GPT model, and responds with both text and speech. Voicebot is designed with a playful, engaging personality and is ideal for demonstrating voice-enabled AI interactions.
+## Summary
+
+Voicebot is an interactive AI voice assistant built using Chainlit. It converts spoken input into text, processes queries with OpenAI's GPT model, and responds with both text and speech. Throughout the development process, we integrated asynchronous event handling, speech recognition, text-to-speech synthesis, and robust error handling to deliver a seamless, conversational user experience.
 
 ## Architecture
 
 Voicebot leverages several key components:
-- **Chainlit:** A framework for building interactive chat applications. It provides the frontend interface and manages asynchronous events.
-- **Speech Recognition:** Utilizes the `SpeechRecognition` package to capture audio from your microphone and convert it to text using the Google Web Speech API.
-- **Text-to-Speech:** Uses `pyttsx3` to convert text responses into spoken audio output.
-- **OpenAI GPT API:** Processes user queries by generating dynamic responses based on a predefined personality. The response is then relayed as text and converted to speech.
-- **Async and Threading:** Uses `asyncio` for non-blocking operations (continuous listening, processing) and `threading` to prevent overlapping speech synthesis.
-- **Environment Configuration:** Sensitive data, such as the OpenAI API key, is managed using a `.env` file.
-- **FFmpeg Dependency:** Required for audio processing; ensures compatibility with various audio formats.
 
+- **Chainlit:** A framework for building interactive chat applications. It manages the frontend interface and asynchronous event handling.
+- **Speech Recognition:** Utilizes the `SpeechRecognition` package and the Google Web Speech API to capture and convert audio input into text.
+- **Text-to-Speech:** Uses `pyttsx3` to convert text responses into spoken audio, with threading locks to ensure non-overlapping speech output.
+- **OpenAI GPT API:** Processes user queries by generating dynamic responses using a predefined personality, enhancing the conversational tone.
+- **Async & Threading:** `asyncio` handles non-blocking operations (continuous listening) while `threading` prevents concurrent speech synthesis.
+- **FFmpeg:** Ensures compatibility with various audio formats required for processing audio inputs.
+
+### Architecture Diagram
+
+```
+         ┌─────────────────┐
+         │   User Speech   │
+         └─────────────────┘
+                   │
+                   ▼
+       ┌──────────────────────┐
+       │  Speech Recognition  │
+       └──────────────────────┘
+                   │
+                   ▼
+       ┌──────────────────────┐        ┌─────────────────────┐
+       │ Chainlit Interface   │◄──────►│  Text-to-Speech     │
+       └──────────────────────┘        └─────────────────────┘
+                   │
+                   ▼
+       ┌──────────────────────┐
+       │  Handle Question     │◄─────────────┐
+       └──────────────────────┘              │
+                   │                         │
+                   ▼                         │
+       ┌──────────────────────┐             │
+       │  OpenAI GPT API      │             │
+       └──────────────────────┘             │
+                   │                         │
+                   ▼                         │
+       ┌──────────────────────┐             │
+       │  Generate Response   │─────────────┘
+       └──────────────────────┘
+```
+
+## Design Decisions & Approach
+
+- **Modular Structure:** Functions like `speak`, `listen`, and `handle_question` isolate core functionalities, making the code easy to understand, test, and extend.
+- **Robust Error Handling:** The code includes retries for speech recognition errors (up to 3 attempts) and a graceful shutdown approach, assuring a reliable user experience even when facing input issues.
+- **Asynchronous Processing:** Leveraging `asyncio` and Chainlit's event-driven architecture allows continuous listening without blocking the application.
+- **Concurrency Management:** Thread locks ensure that text-to-speech operations do not overlap, preserving clear and coherent audio output.
+- **User-Controlled Exit:** The design monitors voice commands like "exit", "quit", "bye", or "goodbye" to terminate the session immediately, ensuring user control.
+- **Environment and Dependency Management:** A `.env` file is used for managing sensitive keys, while dependencies like FFmpeg guarantee smooth audio processing.
 
 ## Installation
 
 ### Prerequisites
 - **Python 3.8+**
-- **FFmpeg:** Make sure FFmpeg is installed and available in your system’s PATH.  
-  - **Windows:** You can use:  
+- **FFmpeg:** Ensure FFmpeg is installed and available in your system's PATH.
+  - **Windows:**
     ```bash
     winget install ffmpeg
     ```
   - **Other OS:** Refer to [FFmpeg documentation](https://ffmpeg.org/download.html).
 
-### Steps
+### Setup Steps
+
 1. **Clone the Repository:**
    ```bash
-   git clone https://github.com/shephinphilip/Voicebot.git
+   git clone https://github.com/yourusername/Voicebot.git
    cd Voicebot
    ```
 
@@ -45,46 +89,39 @@ Voicebot leverages several key components:
      source venv/bin/activate
      ```
 
-3. **Install the Dependencies:**
+3. **Install Dependencies:**
    ```bash
-   pip install -r requirements.txt
+   pip install chainlit SpeechRecognition pyttsx3 openai python-dotenv
+   pip install PyAudio
    ```
-   *If you encounter issues with PyAudio on Windows, download the appropriate wheel from [this site](https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio) and install it using pip.*
+   *Note: If PyAudio installation fails on Windows, download the appropriate wheel from [this site](https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio) and install it using pip.*
 
 4. **Configure Environment Variables:**
-   - In `.env` file in the project root with the following content:
-     ```
-     OPENAI_API_KEY=your_openai_api_key_here
-     ```
+   Create a `.env` file in the project root with the following content:
+   ```
+   OPENAI_API_KEY=your_openai_api_key_here
+   ```
 
 ## Running Voicebot
 
-Launch Voicebot using Chainlit:
+Start the Voicebot using Chainlit with the following command:
+
 ```bash
 chainlit run voicebot.py
 ```
-This command starts the Chainlit server, opens the frontend interface, and begins continuous voice input processing. Once the welcome message is displayed, speak into your microphone. Voicebot will demonstrate both speech-to-text conversion and text-to-speech response functionality.
 
-## Usage
+This command launches the Chainlit server, loads the voice bot interface, and begins continuous voice input processing. The bot responds both via text and spoken output.
 
-- **Voice Input:** Voicebot continuously listens for your spoken queries. 
-- **Text Output:** Your query and the bot's response are shown in the chat interface.
-- **Speech Output:** Responses are also spoken aloud.
-- **Shutdown Behavior:**
-  - If no valid input is detected for 3 consecutive attempts, Voicebot will shut down automatically.
-  - You can also say "exit", "quit", "bye", or "goodbye" to terminate the conversation.
+## Additional Information
 
-## Troubleshooting
-
-- **No Audio Input/Output:** Make sure your microphone is working and not being used by another application.
-- **FFmpeg Issues:** Ensure FFmpeg is correctly installed and in your PATH.
-- **PyAudio Installation:** If installation fails on Windows, download a precompiled wheel from the website mentioned above.
-
-
+- **Error Handling:** If no valid input is received for 3 consecutive attempts, Voicebot shuts down automatically.
+- **Exit Functionality:** Commands like "exit", "quit", "bye", or "goodbye" immediately terminate the session.
+- **Continuous Listening:** The application uses asynchronous processing to listen for input continuously while ensuring clear, non-overlapping speech output.
 
 ## Acknowledgements
 
-- **Chainlit:** For providing a robust framework for interactive chat applications.
-- **SpeechRecognition & PyAudio:** For enabling voice input.
-- **pyttsx3:** For text-to-speech functionality.
-- **OpenAI:** For powering the GPT-based conversational responses.
+- **Chainlit:** For the robust interactive chat framework.
+- **SpeechRecognition & PyAudio:** For enabling seamless voice input.
+- **pyttsx3:** For efficient text-to-speech conversion.
+- **OpenAI GPT:** For powering dynamic, engaging conversational responses.
+- Special thanks to Shephin Philip for the vision behind this project.
