@@ -1,7 +1,7 @@
-chainlit
-openai
+chainlit>=0.7.0
+openai>=1.0.0
 pyttsx3
 speechrecognition
 pyaudio
-python-dotenv
+python-dotenv>=0.19.0
 pydub
